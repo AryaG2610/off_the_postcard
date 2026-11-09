@@ -142,6 +142,63 @@ function App() {
   </div>;
 }
 
+function RouteEditor({ d, onField, onCancel, onSaved }) {
+  const [draft, setDraft] = useState(() => (d.route || []).map((point, index) => ({
+    name: d.routeNames?.[index] || `Stop ${index + 1}`,
+    lat: point[0],
+    lon: point[1]
+  })));
+  const [savedRoute, setSavedRoute] = useState(() => JSON.stringify(draft));
+
+  useEffect(() => {
+    const next = (d.route || []).map((point, index) => ({
+      name: d.routeNames?.[index] || `Stop ${index + 1}`,
+      lat: point[0],
+      lon: point[1]
+    }));
+    setDraft(next);
+    setSavedRoute(JSON.stringify(next));
+  }, [d.route, d.routeNames]);
+
+  const updateStop = (index, field, value) => {
+    setDraft((items) => items.map((stop, stopIndex) => stopIndex === index ? { ...stop, [field]: value } : stop));
+  };
+  const moveStop = (index, direction) => {
+    const nextIndex = index + direction;
+    if (nextIndex < 0 || nextIndex >= draft.length) return;
+    setDraft((items) => {
+      const next = [...items];
+      [next[index], next[nextIndex]] = [next[nextIndex], next[index]];
+      return next;
+    });
+  };
+  const removeStop = (index) => setDraft((items) => items.filter((_, stopIndex) => stopIndex !== index));
+  const addStop = () => setDraft((items) => [...items, { name: `Stop ${items.length + 1}`, lat: 0, lon: 0 }]);
+  const submit = (event) => {
+    event.preventDefault();
+    const route = draft.map((stop) => [Number(stop.lat), Number(stop.lon)]);
+    const routeNames = draft.map((stop, index) => String(stop.name || '').trim() || `Stop ${index + 1}`);
+    onField('route', route);
+    onField('routeNames', routeNames);
+    setSavedRoute(JSON.stringify(draft));
+    onSaved?.();
+  };
+  const isDirty = JSON.stringify(draft) !== savedRoute;
+
+  return <form className="route-editor" onSubmit={submit}>
+    <div className="route-editor-heading"><div><strong>Edit route stops</strong><p>Add, remove, rename, or reorder stops. Save changes to update the route overview.</p></div><button type="button" className="btn ghost sm" onClick={addStop}>＋ Add stop</button></div>
+    <ol className="route-editor-list">{draft.map((stop, index) => <li className="route-editor-stop" key={index}>
+      <span className="num">{index + 1}</span>
+      <label>Stop name<input value={stop.name} onChange={(event) => updateStop(index, 'name', event.target.value)} /></label>
+      <label>Latitude<input type="number" step="0.01" min="-90" max="90" value={stop.lat} onChange={(event) => updateStop(index, 'lat', event.target.value)} /></label>
+      <label>Longitude<input type="number" step="0.01" min="-180" max="180" value={stop.lon} onChange={(event) => updateStop(index, 'lon', event.target.value)} /></label>
+      <div className="route-editor-actions"><button type="button" className="icon-btn" onClick={() => moveStop(index, -1)} disabled={index === 0} aria-label={`Move ${stop.name} up`}>↑</button><button type="button" className="icon-btn" onClick={() => moveStop(index, 1)} disabled={index === draft.length - 1} aria-label={`Move ${stop.name} down`}>↓</button><button type="button" className="icon-btn danger" onClick={() => removeStop(index)} aria-label={`Delete ${stop.name}`}>×</button></div>
+    </li>)}</ol>
+    {!draft.length && <p className="empty-note">No stops yet. Add the first stop to begin the route.</p>}
+    <div className="route-editor-footer"><button className="btn sm" type="submit" disabled={!isDirty}>Save route changes</button><button type="button" className="btn ghost sm" onClick={onCancel}>Cancel</button>{isDirty && <span className="route-editor-dirty">Unsaved route changes</span>}</div>
+  </form>;
+}
+
 function RoutePreview({ d }) {
   const [selectedStop, setSelectedStop] = useState(0);
   const distance = routeDistance(d.route);
@@ -152,12 +209,13 @@ function RoutePreview({ d }) {
 
 function Destination({ d, onField, onSpot, onAddSpot, onAddDay, onCycle, onPhotos, fileInput, onRemove }) {
   const [confirm, setConfirm] = useState(false);
+  const [editingRoute, setEditingRoute] = useState(false);
   const toggleTag = (tag) => onField('tags', d.tags.includes(tag) ? d.tags.filter((t) => t !== tag) : [...d.tags, tag]);
   return <><header><p className="eyebrow">{d.region} · {coords(d.lat, d.lon)}</p><h2><span className="hl">{d.name}</span></h2></header>
     <div className="seg">{STATUSES.map(([key,label]) => <button key={key} className="st" style={{ '--c': `var(--${key})` }} aria-pressed={d.status === key} onClick={() => onField('status', key)}>{label}</button>)}</div>
     <section><h3>Photos</h3><div className="photos">{(d.photos || []).map((photo) => <figure className="ph" key={photo.id}><img src={photo.url} alt={`Photo of ${d.name}`} /><button className="x" onClick={() => onField('photos', d.photos.filter((p) => p.id !== photo.id))}>Remove</button></figure>)}<label className="addph" htmlFor="photo-input"><b>Add photos</b><span>Trips you took, or places that inspire you</span></label><input ref={fileInput} id="photo-input" className="sr" type="file" accept="image/*" multiple onChange={onPhotos} /></div></section>
     <section><h3>Places to visit <span className="cnt">{d.spots.filter((s) => s.done).length} of {d.spots.length}</span></h3>{d.spots.length ? <ul className="checks">{d.spots.map((spot, i) => <li key={`${spot.text}-${i}`}><label><input type="checkbox" checked={spot.done} onChange={(e) => onSpot({ spots: d.spots.map((s, index) => index === i ? { ...s, done: e.target.checked } : s) })} /><span>{spot.text}</span></label><button className="x" onClick={() => onSpot({ spots: d.spots.filter((_, index) => index !== i) })}>×</button></li>)}</ul> : <p className="empty-note">Nothing on the list yet.</p>}<form className="addrow" onSubmit={onAddSpot}><input name="spot" placeholder="Add a specific place" aria-label="Add a place to visit" /><button className="btn ghost sm">Add</button></form></section>
-    {d.type === 'road' && <section><h3>Route overview <span className="cnt">{d.route?.length || 0} stops</span></h3><RoutePreview d={d} /></section>}
+    {d.type === 'road' && <section><div className="route-section-heading"><h3>Route overview <span className="cnt">{d.route?.length || 0} stops</span></h3><button className="btn ghost sm" type="button" onClick={() => setEditingRoute((open) => !open)}>{editingRoute ? 'Close editor' : 'Edit route'}</button></div>{editingRoute && <RouteEditor d={d} onField={onField} onCancel={() => setEditingRoute(false)} onSaved={() => setEditingRoute(false)} />}<RoutePreview d={d} /></section>}
     <section><h3>Rough itinerary</h3>{d.days.length ? <ul className="days">{d.days.map((day, i) => <li key={i}><textarea rows="1" value={day} onChange={(e) => onField('days', d.days.map((line, index) => index === i ? e.target.value : line))} aria-label={`Itinerary line ${i + 1}`} /><button className="x" onClick={() => onField('days', d.days.filter((_, index) => index !== i))}>×</button></li>)}</ul> : <p className="empty-note">No itinerary yet. Sketch it one day at a time.</p>}<div className="addrow"><button className="btn ghost sm" onClick={onAddDay}>Add a day</button></div></section>
     <section><h3>When to go</h3><p className="when-help">A quick planning reference for typical price levels and weather by month. These are notes, not live forecasts or fares.</p><div className="strip" aria-label="Monthly price and weather planner">{MONTHS.map((month, i) => <div className="mo" key={month}><span className="month-name">{month}</span><span className="mt" data-v={d.tiers[i] || '-'} aria-label={`${month} price level: ${TIER_LABELS[d.tiers[i]] || 'not set'}`} title={`${month}: ${TIER_LABELS[d.tiers[i]] || 'not set'}`}>{MONTH_LETTERS[i]}</span><span className="mw" aria-label={`${month} weather: ${WEATHER_LABELS[d.wx[i]] || 'not set'}`} title={`${month}: ${WEATHER_LABELS[d.wx[i]] || 'not set'}`}>{WEATHER_GLYPHS[d.wx[i]] || '·'}</span></div>)}</div><ul className="legend"><li><span className="sw" style={{ '--c': 'var(--tl)' }} />Cheaper</li><li><span className="sw" style={{ '--c': 'var(--tm)' }} />Middle</li><li><span className="sw" style={{ '--c': 'var(--tp)' }} />Peak</li><li>● good weather</li><li>◐ mixed</li><li>○ rough</li></ul><div className="when"><label>Best cheaper window</label><textarea rows="2" value={d.when || ''} onChange={(e) => onField('when', e.target.value)} /></div></section>
     <section><h3>What pulls me</h3><div className="tags">{MOODS.map(([key,label]) => <button key={key} className="tg" aria-pressed={d.tags.includes(key)} onClick={() => toggleTag(key)}>{label}</button>)}</div></section>
