@@ -13,7 +13,7 @@ const WEATHER_LABELS = { G: 'Sun: drier / warmer', O: 'Rain: wetter / humid', R:
 const WEATHER_GLYPHS = { G: '☀', O: '☔', R: '☔', S: '❄' };
 const CORE_STARTER = [
   {
-    id: 'tci', name: 'Turks and Caicos', region: 'British Overseas Territory', type: 'place',
+    id: 'tci', name: 'Turks and Caicos', country: 'British Overseas Territory', type: 'place',
     lat: 21.8, lon: -71.9, status: 'dreaming', tags: ['sea', 'hike'],
     spots: ['Conch Bar Caves, Middle Caicos','Indian Cave and its sinkhole skylights','Mudjin Harbour cliffs and Dragon Cay','Crossing Place Trail to the Juniper Hole sea cave','Bambarra Beach','Flamingo Pond Overlook','Kayak Bottle Creek Lagoon in East Bay Islands National Park','Wade’s Green Plantation ruins, North Caicos','Grand Turk: Front and Duke Streets, National Museum, lighthouse'],
     days: ['Day 1 · Land in Providenciales, take the ferry to North Caicos (book ahead)','Day 2 · North Caicos: Wade’s Green ruins, Cottage Pond, Horsestable Beach','Day 3 · Kayak Bottle Creek, then Flamingo Pond','Day 4 · Middle Caicos: Conch Bar Caves, Indian Cave, Bambarra Beach','Day 5 · Mudjin Harbour and the Crossing Place Trail'],
@@ -21,28 +21,28 @@ const CORE_STARTER = [
     route: [], photos: []
   },
   {
-    id: 'moorea', name: 'Moorea', region: 'French Polynesia', type: 'place',
+    id: 'moorea', name: 'Moorea', country: 'French Polynesia', type: 'place',
     lat: -17.53, lon: -149.83, status: 'dreaming', tags: ['sea','hike','food'],
     spots: ['Belvedere Lookout over Opunohu and Cook’s Bay','Te Fare Natura ecomuseum','Pineapple fields in Opunohu Valley','Kayak Cook’s Bay and picnic on a motu','Temae Beach: free public beach, snorkel the reef','Hike Magic Mountain','Afareaitu waterfalls hike','Poisson cru lunch in Ha’apiti'],
     days: ['Day 1 · Arrive from Tahiti, Cook’s Bay and the Rotui juice factory','Day 2 · Opunohu Valley: marae, ecomuseum, pineapple fields, Belvedere Lookout','Day 3 · Snorkel Temae Beach, then the Afareaitu waterfalls','Day 4 · Magic Mountain hike, then Tipaniers beach'],
     tiers: 'LLLLMMPPPMML', wx: 'RRROGGGGGGOR', when: 'May or June. Dry-season weather without July to September prices.', note: '', route: [], photos: []
   },
   {
-    id: 'hawaii', name: 'Hawaiʻi (Big Island)', region: 'Hawaii, USA', type: 'place',
+    id: 'hawaii', name: 'Hawaiʻi (Big Island)', country: 'Hawaii, USA', type: 'place',
     lat: 19.6, lon: -155.5, status: 'dreaming', tags: ['sea','hike','food','culture'],
     spots: ['Hawaiʻi Volcanoes National Park','South Kona coffee farm tour','Snorkel Kealakekua Bay','Puʻuhonua o Hōnaunau National Historical Park','Punaluʻu Black Sand Beach','Hilo farmers market','Rainbow Falls, Hilo','Akaka Falls','Pololū Valley Lookout','Manta ray night snorkel'],
     days: ['Day 1 · Land in Kona, visit a South Kona coffee farm','Day 2 · Snorkel Kealakekua Bay, Puʻuhonua o Hōnaunau, then a manta ray night snorkel','Day 3 · Drive south past Punaluʻu Black Sand Beach to Volcano','Day 4 · Hawaiʻi Volcanoes National Park','Day 5 · Hilo: farmers market, Rainbow Falls, Akaka Falls'],
     tiers: 'MLPMLPPPLLLP', wx: 'OOOOGGGGGGOO', when: 'May, or September to early November. Avoid mid-December to early January.', note: '', route: [], photos: []
   },
   {
-    id: 'channel', name: 'Channel Islands', region: 'California, USA', type: 'place',
+    id: 'channel', name: 'Channel Islands', country: 'California, USA', type: 'place',
     lat: 34, lon: -119.75, status: 'dreaming', tags: ['sea','hike'],
     spots: ['Island Packers ferry to Scorpion Anchorage, Santa Cruz Island','Cavern Point Loop','Scorpion Ranch historic site','Smuggler’s Cove hike','Potato Harbor Overlook at sunset','Kayak the sea caves to Painted Cave','Snorkel the kelp forest','Look for island foxes on a sunrise walk'],
     days: ['Day 1 · Ferry to Scorpion Anchorage, set up camp, Cavern Point Loop','Day 2 · Smuggler’s Cove hike or kayak to Painted Cave','Day 3 · Sunrise walk for island foxes, then ferry back'],
     tiers: 'LLMMMPPPLLLL', wx: 'RRGGGOOOGGOR', when: 'September or October. Fewer visitors and the clearest skies.', note: '', route: [], photos: []
   },
   {
-    id: 'pch', name: 'Pacific Coast Highway', region: 'California, USA', type: 'road',
+    id: 'pch', name: 'Pacific Coast Highway', country: 'California, USA', type: 'road',
     lat: 36.37, lon: -121.9, status: 'dreaming', tags: ['road','hike','food'],
     route: [[37.77,-122.42],[37.46,-122.43],[36.97,-122.03],[36.6,-121.89],[36.37,-121.9],[36.16,-121.67],[35.67,-121.28],[35.14,-120.64],[34.42,-119.7],[34.05,-118.24]],
     routeNames: ['San Francisco','Half Moon Bay','Santa Cruz','Monterey','Big Sur','McWay Falls','Piedras Blancas','Morro Bay','Santa Barbara','Los Angeles'],
@@ -52,8 +52,8 @@ const CORE_STARTER = [
   }
 ];
 
-const blankDestination = (id, name, region, lat, lon, tags = [], type = 'place') => ({
-  id, name, region, type, lat, lon, status: 'dreaming', tags, spots: [], days: [],
+const blankDestination = (id, name, country, lat, lon, tags = [], type = 'place') => ({
+  id, name, country, type, lat, lon, status: 'dreaming', tags, spots: [], days: [],
   tiers: '', wx: '', when: '', note: '', sourceLinks: [], route: type === 'road' ? [[lat, lon]] : [], photos: []
 });
 
@@ -452,7 +452,10 @@ ADDITIONAL_STARTER.forEach((destination) => {
 const clone = (value) => JSON.parse(JSON.stringify(value));
 const coords = (lat, lon) => `${Math.abs(lat).toFixed(1)}°${lat >= 0 ? 'N' : 'S'} ${Math.abs(lon).toFixed(1)}°${lon >= 0 ? 'E' : 'W'}`;
 const emptySpot = (text) => ({ text, done: false });
-const normalized = (item) => ({ ...item, spots: (item.spots || []).map((s) => typeof s === 'string' ? emptySpot(s) : s), days: item.days || [], photos: item.photos || [], tiers: item.tiers || '', wx: item.seasonProfile?.weatherPattern || item.wx || '', seasonProfile: item.seasonProfile || null, sourceLinks: item.sourceLinks || [], sourceGuidance: item.sourceGuidance || null });
+const normalized = (item) => {
+  const country = item.country ?? item.region ?? '';
+  return { ...item, country, region: country, spots: (item.spots || []).map((s) => typeof s === 'string' ? emptySpot(s) : s), days: item.days || [], photos: item.photos || [], tiers: item.tiers || '', wx: item.seasonProfile?.weatherPattern || item.wx || '', seasonProfile: item.seasonProfile || null, sourceLinks: item.sourceLinks || [], sourceGuidance: item.sourceGuidance || null };
+};
 const isRenderableDestination = (item) => item && typeof item.name === 'string' && item.name.trim().length > 0;
 const haversine = (a, b) => {
   const radius = 3958.8, rad = Math.PI / 180;
@@ -519,7 +522,7 @@ function MapView({ destinations, selectedId, onSelect, addMode = false, route, s
         <circle className={`route-marker ${selectedStop === index ? 'selected' : ''}`} r={selectedStop === index ? 17 : 15} />
         <text className="route-number" y="6" textAnchor="middle">{index + 1}</text>
       </Marker>)}
-      {!routePoints.length && destinations.map((d) => <Marker key={d.id} coordinates={[d.lon, d.lat]} onClick={() => onSelect(d.id)}><circle className={`destination-marker ${d.id === selectedId ? 'selected' : ''}`} r={d.id === selectedId ? 7 : 5} /><title>{d.name} · {d.region}</title>{d.id === selectedId && <text className="destination-label" x={d.lon > 20 ? -10 : 10} y="5" textAnchor={d.lon > 20 ? 'end' : 'start'}>{d.name}</text>}</Marker>)}</>;
+      {!routePoints.length && destinations.map((d) => <Marker key={d.id} coordinates={[d.lon, d.lat]} onClick={() => onSelect(d.id)}><circle className={`destination-marker ${d.id === selectedId ? 'selected' : ''}`} style={{ '--c': `var(--${d.status})` }} r={d.id === selectedId ? 7 : 5} /><title>{d.name} · {d.country}</title>{d.id === selectedId && <text className="destination-label" x={d.lon > 20 ? -10 : 10} y="5" textAnchor={d.lon > 20 ? 'end' : 'start'}>{d.name}</text>}</Marker>)}</>;
   return <div className={`map-shell ${addMode ? 'map-add-mode' : ''} ${routePoints.length ? 'route-map-static' : ''}`} style={routePoints.length ? { '--route-height': `${routeHeight}px` } : undefined}><ComposableMap projection="geoMercator" projectionConfig={routePoints.length ? { scale: routeScale, center: focus } : { scale: 145 }} width={1000} height={routePoints.length ? routeHeight : 440}>
     {routePoints.length ? mapContent : <ZoomableGroup center={position.coordinates} zoom={position.zoom} onMoveEnd={setPosition} minZoom={1} maxZoom={8}>
       {mapContent}
@@ -534,8 +537,11 @@ function App() {
   const [moodFilter, setMoodFilter] = useState('all');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
+  const [placeSuggestions, setPlaceSuggestions] = useState([]);
+  const [placeLookupStatus, setPlaceLookupStatus] = useState({ type: 'idle', message: '' });
   const [theme, setTheme] = useState(() => localStorage.getItem('off-the-postcard-theme') || 'light');
   const fileInput = useRef(null);
+  const placeSearchTimeout = useRef(null);
   const selected = destinations.find((d) => d.id === selectedId);
 
   useEffect(() => { localStorage.setItem('off-the-postcard-v2', JSON.stringify({ dests: destinations })); }, [destinations]);
@@ -544,6 +550,66 @@ function App() {
   const updateSelected = (patch) => setDestinations((items) => items.map((d) => d.id === selectedId ? { ...d, ...patch } : d));
   const filtered = useMemo(() => destinations.filter((d) => (statusFilter === 'all' || d.status === statusFilter) && (moodFilter === 'all' || d.tags.includes(moodFilter))), [destinations, statusFilter, moodFilter]);
   const taken = destinations.filter((d) => d.status === 'been').length;
+  const extractCountry = (place) => {
+    const country = place?.address?.country || place?.address?.country_name;
+    if (country) return country.trim();
+    const displayName = String(place?.display_name || '').trim();
+    const parts = displayName.split(',').map((part) => part.trim()).filter(Boolean);
+    return parts[parts.length - 1] || place?.name || '';
+  };
+  const applyPlaceSelection = (place) => {
+    const form = document.querySelector('.draft');
+    const placeName = place?.address?.city || place?.address?.town || place?.address?.village || place?.name || String(place?.display_name || '').split(',')[0].trim();
+    const country = extractCountry(place);
+    if (form) {
+      form.elements.name.value = placeName;
+      form.elements.country.value = country;
+      form.elements.lat.value = place.lat;
+      form.elements.lon.value = place.lon;
+    }
+    setPlaceSuggestions([]);
+    setPlaceLookupStatus({ type: 'success', message: `Filled from ${country}.` });
+  };
+  const lookupPlace = async (query) => {
+    const name = String(query || '').trim();
+    if (!name) {
+      setPlaceSuggestions([]);
+      setPlaceLookupStatus({ type: 'idle', message: '' });
+      return;
+    }
+    try {
+      setPlaceLookupStatus({ type: 'loading', message: 'Looking up place…' });
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=5&accept-language=en&q=${encodeURIComponent(name)}`);
+      const results = await response.json();
+      const suggestions = (results || []).map((place) => ({
+        id: place.place_id,
+        label: place.display_name,
+        name: place.name || place.address?.city || place.address?.town || place.address?.village || String(place.display_name || '').split(',')[0].trim(),
+        country: extractCountry(place),
+        lat: Number(place.lat),
+        lon: Number(place.lon)
+      }));
+      setPlaceSuggestions(suggestions);
+      if (!suggestions.length) {
+        setPlaceLookupStatus({ type: 'error', message: 'No matches found.' });
+      } else {
+        setPlaceLookupStatus({ type: 'idle', message: '' });
+      }
+    } catch (error) {
+      setPlaceSuggestions([]);
+      setPlaceLookupStatus({ type: 'error', message: 'Place lookup failed. Try a more specific name.' });
+    }
+  };
+  const handlePlaceInput = (event) => {
+    const nextValue = event.target.value;
+    if (placeSearchTimeout.current) clearTimeout(placeSearchTimeout.current);
+    if (!nextValue.trim()) {
+      setPlaceSuggestions([]);
+      setPlaceLookupStatus({ type: 'idle', message: '' });
+      return;
+    }
+    placeSearchTimeout.current = setTimeout(() => lookupPlace(nextValue), 250);
+  };
   const createDraft = (event) => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
@@ -551,8 +617,8 @@ function App() {
     if (!name) return;
     const type = form.get('type') === 'road' ? 'road' : 'place';
     const lat = Number(form.get('lat') || 0), lon = Number(form.get('lon') || 0);
-    const next = normalized({ id: `p${Date.now().toString(36)}`, name, region: String(form.get('region') || '').trim(), type, lat, lon, status: 'dreaming', tags: type === 'road' ? ['road'] : [], spots: [], days: [], photos: [], route: type === 'road' ? [[lat, lon]] : [] });
-    setDestinations((items) => [...items, next]); setSelectedId(next.id); setAddOpen(false);
+    const next = normalized({ id: `p${Date.now().toString(36)}`, name, country: String(form.get('country') || '').trim(), type, lat, lon, status: 'dreaming', tags: type === 'road' ? ['road'] : [], spots: [], days: [], photos: [], route: type === 'road' ? [[lat, lon]] : [] });
+    setDestinations((items) => [...items, next]); setSelectedId(next.id); setAddOpen(false); setPlaceLookupStatus({ type: 'idle', message: '' });
   };
   const changeField = (field, value) => updateSelected({ [field]: value });
   const addSpot = (event) => { event.preventDefault(); const input = event.currentTarget.elements.spot; if (input.value.trim()) { updateSelected({ spots: [...selected.spots, emptySpot(input.value.trim())] }); input.value = ''; } };
@@ -570,9 +636,9 @@ function App() {
 
   return <div className="wrap">
     <header className="mast"><div><p className="kicker">Field notebook for slow travel</p><h1>Off the Postcard</h1><p className="thesis">Places I want to understand, not just visit.</p></div><div className="mast-actions"><button className="btn ghost sm" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>{theme === 'dark' ? 'Light paper' : 'Dark paper'}</button><div className="stamp" aria-label={`${taken} of ${destinations.length} trips taken`}><span className="stamp-n">{taken}<i>/{destinations.length}</i></span><span className="stamp-l">trips taken</span></div></div></header>
-    <section aria-label="World map"><div className="plate"><MapView destinations={destinations} selectedId={selectedId} onSelect={setSelectedId} /></div><div className="map-actions"><button className="btn sm" onClick={() => setAddOpen(true)}>＋ Add destination or trip</button></div>{addOpen && <form className="draft" onSubmit={createDraft}><label>Name<input name="name" required autoFocus /></label><label>Region<input name="region" /></label><label>Type<select name="type" defaultValue="place"><option value="place">Place</option><option value="road">Road trip</option></select></label><label>Latitude<input name="lat" type="number" step="0.01" min="-90" max="90" defaultValue="0" /></label><label>Longitude<input name="lon" type="number" step="0.01" min="-180" max="180" defaultValue="0" /></label><button className="btn sm" type="submit">Add to notebook</button><button type="button" className="btn ghost sm" onClick={() => setAddOpen(false)}>Cancel</button></form>}</section>
-    <div className={`grid ${selected ? 'has-selection' : ''}`}><nav className="index"><div className="index-heading"><h2>Places index</h2><button className="btn ghost sm filter-toggle" type="button" aria-expanded={filtersOpen} onClick={() => setFiltersOpen((open) => !open)}>Filters</button></div>{filtersOpen && <div className="filter-panel"><p className="flabel">Status</p><div className="chips">{[['all','All'],...STATUSES].map(([key,label]) => <button key={key} className="chip" aria-pressed={statusFilter === key} onClick={() => setStatusFilter(key)}>{key !== 'all' && <span className="dotc" style={{ '--c': `var(--${key})` }} />}{label} {key === 'all' ? destinations.length : destinations.filter((d) => d.status === key).length}</button>)}</div><p className="flabel">Type</p><div className="chips">{[['all','All types'],...MOODS].map(([key,label]) => <button key={key} className="chip" aria-pressed={moodFilter === key} onClick={() => setMoodFilter(key)}>{label} {key === 'all' ? destinations.length : destinations.filter((d) => d.tags.includes(key)).length}</button>)}</div></div>}<div className="index-list"><ul className="rows">{filtered.length ? filtered.map((d) => <li key={d.id}><button className="row" aria-current={d.id === selectedId} onClick={() => setSelectedId(d.id)}><span className="dotc" style={{ '--c': `var(--${d.status})` }} /><span><span className="nm">{d.name}</span><span className="rg">{d.region}{d.type === 'road' ? ' · road trip' : ''}</span></span><span className="pr">{d.spots.filter((s) => s.done).length}/{d.spots.length}</span></button></li>) : <li className="none">Nothing matches these filters.</li>}</ul></div></nav>
-      <main className="page">{selected ? <Destination d={selected} onField={changeField} onSpot={updateSelected} onAddSpot={addSpot} onAddDay={addDay} onCycle={cycleMonth} onPhotos={addPhotos} fileInput={fileInput} onRemove={removeSelected} /> : <p className="empty">No places yet. Use Add destination or trip to create your first one.</p>}</main>
+    <section aria-label="World map"><div className="plate"><MapView destinations={destinations} selectedId={selectedId} onSelect={setSelectedId} /></div><div className="map-actions"><button className="btn sm" onClick={() => setAddOpen(true)}>＋ Add destination or trip</button></div>{addOpen && <form key={selected?.id ?? 'new-destination'} className="draft" onSubmit={createDraft}><label>Name<div className="place-search-wrap"><input name="name" required autoFocus placeholder="e.g. Kyoto, Japan" onChange={handlePlaceInput} onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); const value = String(event.currentTarget.value || '').trim(); if (value) { lookupPlace(value); } } }} /><ul className="place-suggestions">{placeSuggestions.map((suggestion) => <li key={suggestion.id}><button type="button" onClick={() => applyPlaceSelection({ ...suggestion, name: suggestion.name, address: { country: suggestion.country }, display_name: suggestion.label, lat: suggestion.lat, lon: suggestion.lon })}>{suggestion.label}</button></li>)}</ul></div></label><label>Country<input name="country" defaultValue="" /></label><label>Type<select name="type" defaultValue="place"><option value="place">Place</option><option value="road">Road trip</option></select></label><label>Latitude<input name="lat" type="number" step="any" min="-90" max="90" defaultValue="" /></label><label>Longitude<input name="lon" type="number" step="any" min="-180" max="180" defaultValue="" /></label>{placeLookupStatus.message && <p className={`lookup-status ${placeLookupStatus.type}`}>{placeLookupStatus.message}</p>}<button className="btn sm" type="submit">Add to notebook</button><button type="button" className="btn ghost sm" onClick={() => { setAddOpen(false); setPlaceLookupStatus({ type: 'idle', message: '' }); setPlaceSuggestions([]); }}>Cancel</button></form>}</section>
+    <div className={`grid ${selected ? 'has-selection' : ''}`}><nav className="index"><div className="index-heading"><h2>Places index</h2><button className="btn ghost sm filter-toggle" type="button" aria-expanded={filtersOpen} onClick={() => setFiltersOpen((open) => !open)}>Filters</button></div>{filtersOpen && <div className="filter-panel"><p className="flabel">Status</p><div className="chips">{[['all','All'],...STATUSES].map(([key,label]) => <button key={key} className="chip" aria-pressed={statusFilter === key} onClick={() => setStatusFilter(key)}>{key !== 'all' && <span className="dotc" style={{ '--c': `var(--${key})` }} />}{label} {key === 'all' ? destinations.length : destinations.filter((d) => d.status === key).length}</button>)}</div><p className="flabel">Type</p><div className="chips">{[['all','All types'],...MOODS].map(([key,label]) => <button key={key} className="chip" aria-pressed={moodFilter === key} onClick={() => setMoodFilter(key)}>{label} {key === 'all' ? destinations.length : destinations.filter((d) => d.tags.includes(key)).length}</button>)}</div></div>}<div className="index-list"><ul className="rows">{filtered.length ? filtered.map((d) => <li key={d.id}><button className="row" aria-current={d.id === selectedId} onClick={() => setSelectedId(d.id)}><span className="dotc" style={{ '--c': `var(--${d.status})` }} /><span><span className="nm">{d.name}</span><span className="rg">{d.country}{d.type === 'road' ? ' · road trip' : ''}</span></span><span className="pr">{d.spots.filter((s) => s.done).length}/{d.spots.length}</span></button></li>) : <li className="none">Nothing matches these filters.</li>}</ul></div></nav>
+      <main className="page">{selected ? <Destination key={selected.id} d={selected} onField={changeField} onSpot={updateSelected} onAddSpot={addSpot} onAddDay={addDay} onCycle={cycleMonth} onPhotos={addPhotos} fileInput={fileInput} onRemove={removeSelected} /> : <p className="empty">No places yet. Use Add destination or trip to create your first one.</p>}</main>
     </div>
   </div>;
 }
@@ -645,8 +711,9 @@ function RoutePreview({ d }) {
 function Destination({ d, onField, onSpot, onAddSpot, onAddDay, onCycle, onPhotos, fileInput, onRemove }) {
   const [confirm, setConfirm] = useState(false);
   const [editingRoute, setEditingRoute] = useState(false);
+  useEffect(() => { setConfirm(false); }, [d.id]);
   const toggleTag = (tag) => onField('tags', d.tags.includes(tag) ? d.tags.filter((t) => t !== tag) : [...d.tags, tag]);
-  return <><header><p className="eyebrow">{d.region} · {coords(d.lat, d.lon)}</p><h2><span className="hl">{d.name}</span></h2></header>
+  return <><header className="destination-header"><div><p className="eyebrow">{d.country} · {coords(d.lat, d.lon)}</p><h2><span className="hl">{d.name}</span></h2></div><div className="remove-wrap"><button className="link" onClick={() => setConfirm(true)}>Remove this {d.type === 'road' ? 'road trip' : 'place'}</button>{confirm && <span className="remove-confirm">Remove it for good? <button className="link danger" onClick={onRemove}>Yes, remove</button> <button className="link" onClick={() => setConfirm(false)}>Keep it</button></span>}</div></header>
     <div className="seg">{STATUSES.map(([key,label]) => <button key={key} className="st" style={{ '--c': `var(--${key})` }} aria-pressed={d.status === key} onClick={() => onField('status', key)}>{label}</button>)}</div>
     <section><h3>Photos</h3><div className="photos">{(d.photos || []).map((photo) => <figure className="ph" key={photo.id}><img src={photo.url} alt={`Photo of ${d.name}`} /><button className="x" onClick={() => onField('photos', d.photos.filter((p) => p.id !== photo.id))}>Remove</button></figure>)}<label className="addph" htmlFor="photo-input"><b>Add photos</b><span>Trips you took, or places that inspire you</span></label><input ref={fileInput} id="photo-input" className="sr" type="file" accept="image/*" multiple onChange={onPhotos} /></div></section>
     <section><h3>Places to visit <span className="cnt">{d.spots.filter((s) => s.done).length} of {d.spots.length}</span></h3>{d.spots.length ? <ul className="checks">{d.spots.map((spot, i) => <li key={`${spot.text}-${i}`}><label><input type="checkbox" checked={spot.done} onChange={(e) => onSpot({ spots: d.spots.map((s, index) => index === i ? { ...s, done: e.target.checked } : s) })} /><span>{spot.text}</span></label><button className="x" onClick={() => onSpot({ spots: d.spots.filter((_, index) => index !== i) })}>×</button></li>)}</ul> : <p className="empty-note">Nothing on the list yet.</p>}<form className="addrow" onSubmit={onAddSpot}><input name="spot" placeholder="Add a specific place" aria-label="Add a place to visit" /><button className="btn ghost sm">Add</button></form></section>
@@ -655,7 +722,6 @@ function Destination({ d, onField, onSpot, onAddSpot, onAddDay, onCycle, onPhoto
     <section><h3>When to go</h3>{d.sourceGuidance && <div className="source-guidance"><strong>Sourced climate guidance</strong><p>{d.sourceGuidance.summary}</p><small>{d.sourceGuidance.caveat}</small><div className="source-actions"><a href={d.sourceGuidance.url} target="_blank" rel="noreferrer">{d.sourceGuidance.sourceLabel || 'Open climate source'} ↗</a>{d.sourceGuidance.fallbackUrl && <a href={d.sourceGuidance.fallbackUrl} target="_blank" rel="noreferrer">Search alternate climate sources ↗</a>}</div>{d.sourceGuidance.sourceNote && <small>{d.sourceGuidance.sourceNote}</small>}</div>}<p className="when-help">Green is a budget-planning estimate, yellow is middle, and red is commonly peak or less budget-friendly. These colors are not live fare data. Weather symbols show sun/drier, rain/wetter, or snow/colder conditions.</p><div className="strip" aria-label="Monthly seasonal planner">{MONTHS.map((month, i) => { const priceCode = d.seasonProfile?.pricePattern?.[i] || d.tiers[i] || '-'; const priceLabel = TIER_LABELS[priceCode] || 'not set'; const weatherCode = d.seasonProfile?.weatherPattern?.[i] || d.wx[i]; const monthNote = d.seasonProfile?.monthLevelSupported ? 'source-backed month detail' : 'editorial month estimate based on broad seasonal guidance'; return <div className="mo" key={month}><span className="month-name">{month}</span><span className="mt" data-v={priceCode} aria-label={`${month}: ${priceLabel}; ${monthNote}`} title={`${month}: ${priceLabel} · ${monthNote}`}>{MONTH_LETTERS[i]}</span><span className="mw" aria-label={`${month} weather: ${WEATHER_LABELS[weatherCode] || 'not set'}; ${monthNote}`} title={`${month} weather: ${WEATHER_LABELS[weatherCode] || 'not set'} · ${monthNote}`}>{WEATHER_GLYPHS[weatherCode] || '·'}</span></div>; })}</div><ul className="legend"><li><span className="sw" style={{ '--c': 'var(--tl)' }} />Budget-planning estimate</li><li><span className="sw" style={{ '--c': 'var(--tm)' }} />Middle / mixed</li><li><span className="sw" style={{ '--c': 'var(--tp)' }} />Commonly peak / less budget-friendly</li><li>☀ sun / drier</li><li>☔ rain / wetter</li><li>❄ snow / colder</li></ul><p className="budget-suggestion"><strong>Lower-cost planning:</strong> {budgetSummary(d)}</p><div className="when"><label>My seasonal planning note</label><textarea rows="2" value={d.when || ''} onChange={(e) => onField('when', e.target.value)} /></div></section>
     <section><h3>What pulls me</h3><div className="tags">{MOODS.map(([key,label]) => <button key={key} className="tg" aria-pressed={d.tags.includes(key)} onClick={() => toggleTag(key)}>{label}</button>)}</div></section>
     <section><h3>My note</h3><textarea className="hand" rows="2" value={d.note || ''} onChange={(e) => onField('note', e.target.value)} placeholder="Why this place? What do I hope to feel there?" />{d.sourceLinks?.length > 0 && <div className="sources"><span className="source-label">Planning starting points</span>{d.sourceLinks.map((source) => <a key={source.url} href={source.url} target="_blank" rel="noreferrer">{source.label} ↗</a>)}</div>}</section>
-    <div className="foot"><button className="link" onClick={() => setConfirm(true)}>Remove this {d.type === 'road' ? 'road trip' : 'place'}</button>{confirm && <span>Remove it for good? <button className="link danger" onClick={onRemove}>Yes, remove</button> <button className="link" onClick={() => setConfirm(false)}>Keep it</button></span>}</div>
   </>;
 }
 
